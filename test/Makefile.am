@@ -383,9 +383,13 @@ TESTDATA = \
     test-data/sample_2013.dxf \
     test-data/sample_2018.dwg \
     test-data/sample_2018.dxf \
-    test-data/sample_r14.dxf
+    test-data/sample_r14.dxf \
+    test-data/test_chinese.dxf
 
 EXTRA_DIST = $(TESTDATA)
+
+TESTS = \
+    test_chinese_json.sh
 
 if ENABLE_GCOV
 gcov:

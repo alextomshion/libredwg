@@ -1528,14 +1528,28 @@ json_cquote (char *restrict dest, const char *restrict src, const size_t len,
 
   if (!src)
     return (char *)"";
-  if (strlen (src) && codepage > CP_US_ASCII && codepage <= CP_ANSI_1258)
+
+#ifndef HAVE_ICONV
+  if (codepage > CP_US_ASCII && codepage != CP_UTF8)
+    {
+      LOG_WARN("JSON conversion: iconv is not available, cannot convert from codepage %d. Output may be garbled.", codepage);
+    }
+#else // HAVE_ICONV is defined
+  if (strlen (src) && codepage > CP_US_ASCII && codepage <= CP_ANSI_1258 && codepage != CP_UTF8)
     {
       // may malloc
       tmp = bit_TV_to_utf8 ((char *restrict)src, codepage);
       if (tmp)
-        s = (unsigned char *)tmp;
-      // else conversion failed. ignore
+        {
+          s = (unsigned char *)tmp;
+        }
+      else
+        {
+          LOG_ERROR("JSON conversion: Failed to convert string from codepage %d to UTF-8. String (first 50 chars): %.*s", codepage, 50, src);
+          // s remains (unsigned char *)src as per initialization
+        }
     }
+#endif // HAVE_ICONV
   while ((c = *s++))
     {
       if (dest >= endp)
